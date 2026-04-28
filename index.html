@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Election Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 class="translatable" data-en="Election App" data-hi="चुनाव ऐप">Election App</h2>
+                <button id="lang-toggle" class="lang-btn">A/अ</button>
+            </div>
+            <ul class="nav-links">
+                <li><button class="nav-btn active translatable" data-target="home-section" data-en="Home" data-hi="मुख्य पृष्ठ">Home</button></li>
+                <li><button class="nav-btn translatable" data-target="voter-guide-section" data-en="Voter Guide" data-hi="मतदाता गाइड">Voter Guide</button></li>
+                <li><button class="nav-btn translatable" data-target="eligibility-section" data-en="Eligibility & Rights" data-hi="पात्रता और अधिकार">Eligibility & Rights</button></li>
+                <li><button class="nav-btn translatable" data-target="city-info-section" data-en="City-wise Info" data-hi="शहर-वार जानकारी">City-wise Info</button></li>
+                <li><button class="nav-btn translatable" data-target="booth-locator-section" data-en="Find My Booth" data-hi="मेरा बूथ खोजें">Find My Booth</button></li>
+                <li><button class="nav-btn translatable" data-target="candidates-section" data-en="Parties & Candidates" data-hi="पार्टियां और उम्मीदवार">Parties & Candidates</button></li>
+                <li><button class="nav-btn translatable" data-target="chatbot-section" data-en="Chatbot" data-hi="चैटबॉट">Chatbot</button></li>
+                <li><button class="nav-btn translatable" data-target="timeline-section" data-en="Election Timeline" data-hi="चुनाव समयरेखा">Election Timeline</button></li>
+                <li><button class="nav-btn translatable" data-target="quiz-section" data-en="Quiz" data-hi="प्रश्नोत्तरी">Quiz</button></li>
+                <li><button class="nav-btn translatable" data-target="demo-voting-section" data-en="Demo Voting" data-hi="डेमो वोटिंग">Demo Voting</button></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Source Disclaimer -->
+            <div class="top-disclaimer translatable" data-en="ℹ️ Official information sourced based on Election Commission of India guidelines." data-hi="ℹ️ भारत के चुनाव आयोग के दिशानिर्देशों के आधार पर आधिकारिक जानकारी।">
+                ℹ️ Official information sourced based on Election Commission of India guidelines.
+            </div>
+
+            <!-- Home Section -->
+            <section id="home-section" class="content-section active">
+                <div class="hero">
+                    <h1 class="translatable" data-en="Smart Election Assistant" data-hi="स्मार्ट चुनाव सहायक">Smart Election Assistant</h1>
+                    <p class="translatable" data-en="Your comprehensive guide to voting, candidates, and election procedures." data-hi="मतदान, उम्मीदवारों और चुनाव प्रक्रियाओं के लिए आपकी व्यापक मार्गदर्शिका।">Your comprehensive guide to voting, candidates, and election procedures.</p>
+                </div>
+                <div class="grid-dashboard">
+                    <div class="card nav-card" data-target="voter-guide-section">
+                        <h3>📖 <span class="translatable" data-en="Voter Guide" data-hi="मतदाता गाइड">Voter Guide</span></h3>
+                    </div>
+                    <div class="card nav-card" data-target="eligibility-section">
+                        <h3>✅ <span class="translatable" data-en="Eligibility & Rights" data-hi="पात्रता और अधिकार">Eligibility & Rights</span></h3>
+                    </div>
+                    <div class="card nav-card" data-target="city-info-section">
+                        <h3>🏙️ <span class="translatable" data-en="City-wise Info" data-hi="शहर-वार जानकारी">City-wise Info</span></h3>
+                    </div>
+                    <div class="card nav-card" data-target="booth-locator-section">
+                        <h3>📍 <span class="translatable" data-en="Find My Booth" data-hi="मेरा बूथ खोजें">Find My Booth</span></h3>
+                    </div>
+                    <div class="card nav-card" data-target="candidates-section">
+                        <h3>👥 <span class="translatable" data-en="View Parties" data-hi="पार्टियां देखें">View Parties</span></h3>
+                    </div>
+                    <div class="card nav-card" data-target="chatbot-section">
+                        <h3>🤖 <span class="translatable" data-en="Chatbot" data-hi="चैटबॉट">Chatbot</span></h3>
+                    </div>
+                    <div class="card nav-card" data-target="timeline-section">
+                        <h3>📅 <span class="translatable" data-en="Election Timeline" data-hi="चुनाव समयरेखा">Election Timeline</span></h3>
+                    </div>
+                    <div class="card nav-card" data-target="quiz-section">
+                        <h3>📝 <span class="translatable" data-en="Quiz" data-hi="प्रश्नोत्तरी">Quiz</span></h3>
+                    </div>
+                    <div class="card nav-card" data-target="demo-voting-section">
+                        <h3>🗳️ <span class="translatable" data-en="Demo Voting" data-hi="डेमो वोटिंग">Demo Voting</span></h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Voter Guide Section -->
+            <section id="voter-guide-section" class="content-section">
+                <h2 class="translatable" data-en="Voter Guide" data-hi="मतदाता गाइड">Voter Guide</h2>
+                <div class="stepper">
+                    <div class="step">
+                        <div class="step-icon">1</div>
+                        <div class="step-content">
+                            <h3 class="translatable" data-en="Registration" data-hi="पंजीकरण">Registration</h3>
+                            <p class="translatable" data-en="Register to vote using Form 6 on the NVSP portal." data-hi="एनवीएसपी पोर्टल पर फॉर्म 6 का उपयोग करके मतदान के लिए पंजीकरण करें।">Register to vote using Form 6 on the NVSP portal.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">2</div>
+                        <div class="step-content">
+                            <h3 class="translatable" data-en="Campaign" data-hi="अभियान">Campaign</h3>
+                            <p class="translatable" data-en="Learn about candidates and their agendas." data-hi="उम्मीदवारों और उनके एजेंडे के बारे में जानें।">Learn about candidates and their agendas.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">3</div>
+                        <div class="step-content">
+                            <h3 class="translatable" data-en="Voting" data-hi="मतदान">Voting</h3>
+                            <p class="translatable" data-en="Go to your designated polling booth and cast your vote." data-hi="अपने निर्धारित मतदान केंद्र पर जाएं और अपना वोट डालें।">Go to your designated polling booth and cast your vote.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">4</div>
+                        <div class="step-content">
+                            <h3 class="translatable" data-en="Results" data-hi="परिणाम">Results</h3>
+                            <p class="translatable" data-en="Votes are counted and results are officially declared." data-hi="वोट गिने जाते हैं और परिणाम आधिकारिक तौर पर घोषित किए जाते हैं।">Votes are counted and results are officially declared.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Eligibility & Rights Section -->
+            <section id="eligibility-section" class="content-section">
+                <h2 class="translatable" data-en="Eligibility & Rights" data-hi="पात्रता और अधिकार">Eligibility & Rights</h2>
+                <div class="card form-card">
+                    <h3 class="translatable" data-en="Check Eligibility" data-hi="पात्रता जांचें">Check Eligibility</h3>
+                    <div class="input-group">
+                        <input type="number" id="age-input" placeholder="Enter your age" min="0">
+                        <button id="check-eligibility-btn" class="primary-btn translatable" data-en="Check" data-hi="जांचें">Check</button>
+                    </div>
+                    <div id="eligibility-result" class="result-box"></div>
+                </div>
+                <div class="card mt-2">
+                    <h3 class="translatable" data-en="Your Voting Rights" data-hi="आपके मतदान के अधिकार">Your Voting Rights</h3>
+                    <ul class="rights-list">
+                        <li class="translatable" data-en="🕊️ Right to vote freely" data-hi="🕊️ स्वतंत्र रूप से मतदान का अधिकार">🕊️ Right to vote freely</li>
+                        <li class="translatable" data-en="🤫 Right to secret ballot" data-hi="🤫 गुप्त मतदान का अधिकार">🤫 Right to secret ballot</li>
+                        <li class="translatable" data-en="❌ Right to NOTA (None of the Above)" data-hi="❌ नोटा का अधिकार">❌ Right to NOTA (None of the Above)</li>
+                        <li class="translatable" data-en="⚖️ Right to fair process" data-hi="⚖️ निष्पक्ष प्रक्रिया का अधिकार">⚖️ Right to fair process</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- City-wise Info Section -->
+            <section id="city-info-section" class="content-section">
+                <h2 class="translatable" data-en="City-wise Election Info" data-hi="शहर-वार चुनाव जानकारी">City-wise Election Info</h2>
+                <div class="card form-card">
+                    <div class="input-row">
+                        <input type="text" id="city-input" placeholder="City (e.g. Delhi, Mumbai)">
+                        <input type="text" id="state-input" placeholder="State">
+                        <button id="get-city-info-btn" class="primary-btn translatable" data-en="Search" data-hi="खोजें">Search</button>
+                    </div>
+                    <div id="city-info-result" class="result-box"></div>
+                </div>
+            </section>
+
+            <!-- Booth Locator Section -->
+            <section id="booth-locator-section" class="content-section">
+                <h2 class="translatable" data-en="Find My Booth" data-hi="मेरा बूथ खोजें">Find My Booth</h2>
+                <div class="card form-card">
+                    <div class="input-row">
+                        <input type="text" id="area-input" placeholder="Enter City or Area">
+                        <button id="locate-booth-btn" class="primary-btn translatable" data-en="Locate" data-hi="खोजें">Locate</button>
+                    </div>
+                    <div id="booth-result" class="result-box"></div>
+                    <div class="map-placeholder">
+                        <iframe id="map-iframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14008.114827184288!2d77.20902120000002!3d28.6251826!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfd37b741d057%3A0xcdee88e47393c3f1!2sConnaught%20Place%2C%20New%20Delhi%2C%20Delhi%20110001!5e0!3m2!1sen!2sin!4v1700000000000" width="100%" height="300" style="border:0; border-radius: 12px; margin-top: 15px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Candidates Section -->
+            <section id="candidates-section" class="content-section">
+                <h2 class="translatable" data-en="Parties & Candidates" data-hi="पार्टियां और उम्मीदवार">Parties & Candidates</h2>
+                <p class="neutral-disclaimer translatable" data-en="⚠️ This app provides information only and does not recommend any political party." data-hi="⚠️ यह ऐप केवल जानकारी प्रदान करता है और किसी भी राजनीतिक दल की सिफारिश नहीं करता है।">⚠️ This app provides information only and does not recommend any political party.</p>
+                <div class="candidates-grid">
+                    <div class="card candidate-card">
+                        <div class="party-header">
+                            <span class="party-symbol">🌅</span>
+                            <h3>Progressive Dawn Party</h3>
+                        </div>
+                        <ul class="agenda-list">
+                            <li>Renewable energy transition by 2030</li>
+                            <li>Universal healthcare expansion</li>
+                            <li>Tech-driven education reforms</li>
+                        </ul>
+                    </div>
+                    <div class="card candidate-card">
+                        <div class="party-header">
+                            <span class="party-symbol">🌲</span>
+                            <h3>National Heritage Front</h3>
+                        </div>
+                        <ul class="agenda-list">
+                            <li>Preservation of cultural landmarks</li>
+                            <li>Tax incentives for local businesses</li>
+                            <li>Stronger border security policies</li>
+                        </ul>
+                    </div>
+                    <div class="card candidate-card">
+                        <div class="party-header">
+                            <span class="party-symbol">🚀</span>
+                            <h3>Future Forward Coalition</h3>
+                        </div>
+                        <ul class="agenda-list">
+                            <li>AI and robotics funding</li>
+                            <li>Universal basic income pilot program</li>
+                            <li>Space exploration initiatives</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chatbot Section -->
+            <section id="chatbot-section" class="content-section">
+                <h2 class="translatable" data-en="Election Assistant Chatbot" data-hi="चुनाव सहायक चैटबॉट">Election Assistant Chatbot</h2>
+                <div class="chat-container card">
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="message bot-message translatable" data-en="Hello! Ask me about voting, required documents, or the election process." data-hi="नमस्ते! मुझसे मतदान, आवश्यक दस्तावेजों या चुनाव प्रक्रिया के बारे में पूछें।">Hello! Ask me about voting, required documents, or the election process.</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Type your question...">
+                        <button id="send-chat-btn" class="primary-btn">Send</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Timeline Section -->
+            <section id="timeline-section" class="content-section">
+                <h2 class="translatable" data-en="Election Timeline" data-hi="चुनाव समयरेखा">Election Timeline</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">Phase 1</div>
+                        <div class="timeline-content card">
+                            <h3 class="translatable" data-en="Registration" data-hi="पंजीकरण">Registration</h3>
+                            <p class="translatable" data-en="Voter roll updates and candidate nominations." data-hi="मतदाता सूची अपडेट और उम्मीदवार नामांकन।">Voter roll updates and candidate nominations.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">Phase 2</div>
+                        <div class="timeline-content card">
+                            <h3 class="translatable" data-en="Campaign" data-hi="अभियान">Campaign</h3>
+                            <p class="translatable" data-en="Public rallies, manifestos release, and debates." data-hi="सार्वजनिक रैलियां, घोषणापत्र जारी करना और बहस।">Public rallies, manifestos release, and debates.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item active-timeline">
+                        <div class="timeline-date">Phase 3</div>
+                        <div class="timeline-content card">
+                            <h3 class="translatable" data-en="Voting" data-hi="मतदान">Voting</h3>
+                            <p class="translatable" data-en="Polling day across multiple phases." data-hi="कई चरणों में मतदान का दिन।">Polling day across multiple phases.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">Phase 4</div>
+                        <div class="timeline-content card">
+                            <h3 class="translatable" data-en="Results" data-hi="परिणाम">Results</h3>
+                            <p class="translatable" data-en="Counting of votes and declaration of winners." data-hi="वोटों की गिनती और विजेताओं की घोषणा।">Counting of votes and declaration of winners.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quiz Section -->
+            <section id="quiz-section" class="content-section">
+                <h2 class="translatable" data-en="Election Knowledge Quiz" data-hi="चुनाव ज्ञान प्रश्नोत्तरी">Election Knowledge Quiz</h2>
+                <div id="quiz-container" class="card">
+                    <!-- Quiz injected by JS -->
+                </div>
+            </section>
+
+            <!-- Demo Voting Section -->
+            <section id="demo-voting-section" class="content-section">
+                <h2 class="translatable" data-en="Demo Voting" data-hi="डेमो वोटिंग">Demo Voting</h2>
+                <p class="neutral-disclaimer translatable" data-en="⚠️ This is a demo poll for educational purposes only." data-hi="⚠️ यह केवल शैक्षिक उद्देश्यों के लिए एक डेमो पोल है।">⚠️ This is a demo poll for educational purposes only.</p>
+                <div class="card demo-card">
+                    <div class="voting-options">
+                        <button class="vote-btn" data-party="A">Vote for Progressive Dawn (🌅)</button>
+                        <button class="vote-btn" data-party="B">Vote for Heritage Front (🌲)</button>
+                        <button class="vote-btn" data-party="C">Vote for Future Forward (🚀)</button>
+                        <button class="vote-btn btn-nota" data-party="NOTA">NOTA (None of the Above)</button>
+                    </div>
+                    <div class="results-container mt-2">
+                        <h3 class="translatable" data-en="Live Results:" data-hi="लाइव परिणाम:">Live Results:</h3>
+                        <div id="poll-results">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
