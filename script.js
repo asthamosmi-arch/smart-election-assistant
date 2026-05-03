@@ -1,9 +1,36 @@
 /**
  * Smart Election Assistant - Main Script
- * Handles navigation, language toggle, chatbot, quiz, demo voting, and Google Maps
+ * Features: Firebase Realtime Database, Google Maps, Bilingual, Quiz, Chatbot
  */
 
 'use strict';
+
+// ============================================================
+// FIREBASE CONFIGURATION & INITIALIZATION
+// ============================================================
+
+const firebaseConfig = {
+    apiKey: "AIzaSyB73wE94Nm45Sh1dDP_WNHQOgFsjMF1GL0",
+    authDomain: "smart-election-assistant-34fd6.firebaseapp.com",
+    databaseURL: "https://smart-election-assistant-34fd6-default-rtdb.firebaseio.com",
+    projectId: "smart-election-assistant-34fd6",
+    storageBucket: "smart-election-assistant-34fd6.firebasestorage.app",
+    messagingSenderId: "103417862972",
+    appId: "1:103417862972:web:3c9b362b5dfc5081b61c39",
+    measurementId: "G-8FSZ0LWHSK"
+};
+
+let firebaseApp = null;
+let db = null;
+
+try {
+    firebaseApp = firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    firebase.analytics();
+    console.log('Firebase connected successfully');
+} catch (e) {
+    console.warn('Firebase init failed, using local fallback:', e.message);
+}
 
 // ============================================================
 // CONSTANTS & DATA
@@ -81,7 +108,7 @@ const QUIZ_QUESTIONS = [
     },
     {
         question: 'Which article of the Constitution gives the right to vote?',
-        options: ['Article 19', '326', 'Article 14', 'Article 21'],
+        options: ['Article 19', 'Article 326', 'Article 14', 'Article 21'],
         correct: 1,
         explanation: 'Article 326 of the Indian Constitution grants the right to vote.'
     },
@@ -105,12 +132,29 @@ const CHATBOT_RESPONSES = {
     'document': 'Documents accepted at polling booths: Voter ID Card (EPIC), Aadhaar Card, Passport, Driving License, PAN Card, or any government-issued photo ID.',
     'booth': 'To find your polling booth, visit voters.eci.gov.in or call the voter helpline 1950. You can also use this app\'s "Find My Booth" section.',
     'nota': 'NOTA (None of the Above) lets voters reject all candidates. Press the NOTA button on the EVM if you don\'t want to vote for any candidate.',
-    'evm': 'EVM (Electronic Voting Machine) is a tamper-proof device used in Indian elections. It records your vote securely without paper.',
+    'evm': 'EVM (Electronic Voting Machine) is a tamper-proof device used in Indian elections. It records your vote securely.',
     'id': 'You need a valid Voter ID (EPIC) or any government-issued photo ID to vote. The Election Commission accepts 12 types of documents.',
     'age': 'The minimum voting age in India is 18 years. You must be 18 or older on the qualifying date to register as a voter.',
     'time': 'Polling booths are generally open from 7:00 AM to 6:00 PM on election day. Some constituencies may have different timings.',
     'default': 'I can help you with information about voting, registration, documents, polling booths, NOTA, and more. Please ask a specific question!'
 };
+
+// ============================================================
+// EFFICIENCY: CACHING & DEBOUNCE
+// ============================================================
+
+const cityCache = {};
+
+/**
+ * Debounce function to limit rapid firing
+ */
+function debounce(fn, delay) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
 
 // ============================================================
 // GOOGLE MAPS INTEGRATION
@@ -120,38 +164,35 @@ let map = null;
 let marker = null;
 
 /**
- * Initialize Google Maps
+ * Initialize Google Maps with fallback
  */
 function initMap() {
-    const defaultLocation = { lat: 28.6139, lng: 77.2090 }; // Delhi
     const mapElement = document.getElementById('google-map');
     if (!mapElement) return;
 
-    map = new google.maps.Map(mapElement, {
-        zoom: 12,
-        center: defaultLocation,
-        mapTypeControl: false,
-        streetViewControl: false,
-        styles: [
-            { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }
-        ]
-    });
-
-    marker = new google.maps.Marker({
-        position: defaultLocation,
-        map: map,
-        title: 'Polling Booth Location',
-        icon: {
-            url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
-        }
-    });
+    try {
+        const defaultLocation = { lat: 28.6139, lng: 77.2090 };
+        map = new google.maps.Map(mapElement, {
+            zoom: 12,
+            center: defaultLocation,
+            mapTypeControl: false,
+            streetViewControl: false,
+            styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }]
+        });
+        marker = new google.maps.Marker({
+            position: defaultLocation,
+            map: map,
+            title: 'Polling Booth Location',
+            icon: { url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }
+        });
+    } catch (e) {
+        mapElement.style.cssText = 'padding:20px;text-align:center;background:#f3f4f6;border-radius:8px;';
+        mapElement.innerHTML = '<p>📍 Map preview unavailable.</p><a href="https://maps.google.com/?q=28.6139,77.2090" target="_blank" rel="noopener noreferrer">Open in Google Maps</a>';
+    }
 }
 
 /**
- * Update map location
- * @param {number} lat - Latitude
- * @param {number} lng - Longitude
- * @param {string} title - Marker title
+ * Update map to a new location
  */
 function updateMap(lat, lng, title) {
     if (!map || !marker) return;
@@ -166,13 +207,8 @@ function updateMap(lat, lng, title) {
 // NAVIGATION
 // ============================================================
 
-/**
- * Navigate to a section
- * @param {string} targetId - Section ID to navigate to
- */
 function navigateTo(targetId) {
-    const sections = document.querySelectorAll('.content-section');
-    sections.forEach(section => {
+    document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
         section.setAttribute('aria-hidden', 'true');
     });
@@ -184,8 +220,7 @@ function navigateTo(targetId) {
         targetSection.focus();
     }
 
-    const navButtons = document.querySelectorAll('.nav-btn');
-    navButtons.forEach(btn => {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
         btn.removeAttribute('aria-current');
     });
@@ -203,175 +238,136 @@ function navigateTo(targetId) {
 
 let currentLang = 'en';
 
-/**
- * Toggle language between English and Hindi
- */
 function toggleLanguage() {
     currentLang = currentLang === 'en' ? 'hi' : 'en';
-    const translatables = document.querySelectorAll('.translatable');
-    translatables.forEach(el => {
+    document.querySelectorAll('.translatable').forEach(el => {
         const text = el.getAttribute(`data-${currentLang}`);
         if (text) el.textContent = text;
     });
-
     const langBtn = document.getElementById('lang-toggle');
     if (langBtn) {
         langBtn.setAttribute('aria-label', currentLang === 'en' ? 'Switch to Hindi' : 'Switch to English');
     }
-
-    document.documentElement.setAttribute('lang', currentLang === 'hi' ? 'hi' : 'en');
 }
 
 // ============================================================
 // ELIGIBILITY CHECKER
 // ============================================================
 
-/**
- * Check voter eligibility based on age
- */
 function checkEligibility() {
-    const ageInput = document.getElementById('age-input');
+    const input = document.getElementById('age-input');
     const result = document.getElementById('eligibility-result');
-    if (!ageInput || !result) return;
+    if (!input || !result) return;
 
-    const age = parseInt(ageInput.value, 10);
+    const age = parseInt(input.value, 10);
 
     if (isNaN(age) || age < 0 || age > 120) {
-        result.innerHTML = '<span class="error">⚠️ Please enter a valid age between 0 and 120.</span>';
-        result.className = 'result-box error';
+        result.innerHTML = '<p class="error" role="alert">⚠️ Please enter a valid age between 0 and 120.</p>';
         return;
     }
-
     if (age >= 18) {
-        result.innerHTML = `✅ <strong>Eligible to Vote!</strong> At ${age} years old, you can register and vote in Indian elections. Visit voters.eci.gov.in to register.`;
-        result.className = 'result-box success';
+        result.innerHTML = `<p class="success" role="alert">✅ You are eligible to vote! Age ${age} meets the minimum requirement of 18 years.</p>`;
     } else {
-        const yearsLeft = 18 - age;
-        result.innerHTML = `❌ <strong>Not Yet Eligible.</strong> At ${age} years old, you need ${yearsLeft} more year(s) to be eligible to vote.`;
-        result.className = 'result-box error';
+        result.innerHTML = `<p class="error" role="alert">❌ You are not yet eligible. You need to be at least 18 years old. You are ${18 - age} year(s) away.</p>`;
     }
 }
 
 // ============================================================
-// CITY INFO
+// CITY INFO (with caching)
 // ============================================================
 
-/**
- * Get city-wise election information
- */
 function getCityInfo() {
-    const cityInput = document.getElementById('city-input');
+    const select = document.getElementById('city-select');
     const result = document.getElementById('city-info-result');
-    if (!cityInput || !result) return;
+    if (!select || !result) return;
 
-    const city = cityInput.value.trim().toLowerCase();
+    const city = select.value;
     if (!city) {
-        result.innerHTML = '<span class="error">⚠️ Please enter a city name.</span>';
+        result.innerHTML = '<p role="alert">Please select a city.</p>';
+        return;
+    }
+
+    // Use cache if available
+    if (cityCache[city]) {
+        displayCityInfo(cityCache[city], result);
         return;
     }
 
     const data = CITY_DATA[city];
     if (data) {
-        result.innerHTML = `
-            <div class="info-grid">
-                <div class="info-item"><strong>🏙️ City:</strong> ${data.city}</div>
-                <div class="info-item"><strong>📅 Voting Date:</strong> ${data.votingDate}</div>
-                <div class="info-item"><strong>⏰ Voting Time:</strong> ${data.votingTime}</div>
-                <div class="info-item"><strong>📊 Previous Turnout:</strong> ${data.previousTurnout}</div>
-                <div class="info-item"><strong>🗳️ Total Booths:</strong> ${data.totalBooths.toLocaleString()}</div>
-                <div class="info-item"><strong>👥 Total Voters:</strong> ${data.totalVoters}</div>
-            </div>`;
-        result.className = 'result-box success';
+        cityCache[city] = data;
+        displayCityInfo(data, result);
     } else {
-        result.innerHTML = `⚠️ City "<strong>${cityInput.value}</strong>" not found. Try: Delhi, Mumbai, Bangalore, Chennai, Hyderabad, or Kolkata.`;
-        result.className = 'result-box error';
+        result.innerHTML = '<p role="alert">City information not available.</p>';
     }
+}
+
+function displayCityInfo(data, container) {
+    container.innerHTML = `
+        <div class="city-info-card" role="region" aria-label="${data.city} election information">
+            <h3>📍 ${data.city}</h3>
+            <p><strong>Voting Date:</strong> ${data.votingDate}</p>
+            <p><strong>Voting Time:</strong> ${data.votingTime}</p>
+            <p><strong>Previous Turnout:</strong> ${data.previousTurnout}</p>
+            <p><strong>Total Booths:</strong> ${data.totalBooths.toLocaleString()}</p>
+            <p><strong>Total Voters:</strong> ${data.totalVoters}</p>
+        </div>`;
 }
 
 // ============================================================
 // BOOTH LOCATOR
 // ============================================================
 
-/**
- * Locate polling booth and update map
- */
 function locateBooth() {
-    const areaInput = document.getElementById('area-input');
-    const result = document.getElementById('booth-result');
-    if (!areaInput || !result) return;
+    const select = document.getElementById('booth-city-select');
+    if (!select) return;
+    const city = select.value;
+    if (!city) { alert('Please select a city.'); return; }
 
-    const area = areaInput.value.trim().toLowerCase();
-    if (!area) {
-        result.innerHTML = '<span class="error">⚠️ Please enter a city or area name.</span>';
-        return;
-    }
-
-    const data = CITY_DATA[area];
-    if (data) {
-        result.innerHTML = `
-            <div class="booth-info">
-                <p>📍 <strong>Nearest Booth Area:</strong> ${data.city} Central</p>
-                <p>🕐 <strong>Timings:</strong> ${data.votingTime}</p>
-                <p>📋 <strong>Bring:</strong> Voter ID / Aadhaar / Passport</p>
-                <p>☎️ <strong>Helpline:</strong> 1950</p>
-            </div>`;
-        result.className = 'result-box success';
-        updateMap(data.lat, data.lng, `${data.city} Polling Booth`);
-    } else {
-        result.innerHTML = `⚠️ Area "<strong>${areaInput.value}</strong>" not found. Try: Delhi, Mumbai, Bangalore, Chennai, Hyderabad, or Kolkata.`;
-        result.className = 'result-box error';
-    }
+    const data = CITY_DATA[city];
+    if (data) updateMap(data.lat, data.lng, `${data.city} - Polling Booth`);
 }
 
 // ============================================================
-// CHATBOT
+// CHATBOT (with debounce)
 // ============================================================
 
-/**
- * Send a chat message and get a response
- */
+function getBotResponse(message) {
+    if (!message || message.trim() === '') return CHATBOT_RESPONSES.default;
+    const lower = message.toLowerCase();
+    const matchedKey = Object.keys(CHATBOT_RESPONSES).find(key => key !== 'default' && lower.includes(key));
+    return matchedKey ? CHATBOT_RESPONSES[matchedKey] : CHATBOT_RESPONSES.default;
+}
+
 function sendChatMessage() {
     const input = document.getElementById('chat-input');
-    const messagesContainer = document.getElementById('chat-messages');
-    if (!input || !messagesContainer) return;
+    const messages = document.getElementById('chat-messages');
+    if (!input || !messages) return;
 
-    const userMessage = input.value.trim();
-    if (!userMessage) return;
+    const text = input.value.trim();
+    if (!text) return;
 
-    // Add user message
-    const userDiv = document.createElement('div');
-    userDiv.className = 'message user-message';
-    userDiv.textContent = userMessage;
-    userDiv.setAttribute('role', 'listitem');
-    messagesContainer.appendChild(userDiv);
-
-    // Generate bot response
-    const response = getBotResponse(userMessage);
-    setTimeout(() => {
-        const botDiv = document.createElement('div');
-        botDiv.className = 'message bot-message';
-        botDiv.textContent = response;
-        botDiv.setAttribute('role', 'listitem');
-        messagesContainer.appendChild(botDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, 400);
+    const userMsg = document.createElement('div');
+    userMsg.className = 'message user-message';
+    userMsg.textContent = text;
+    userMsg.setAttribute('aria-label', `You said: ${text}`);
+    messages.appendChild(userMsg);
 
     input.value = '';
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    setTimeout(() => {
+        const botMsg = document.createElement('div');
+        botMsg.className = 'message bot-message';
+        botMsg.textContent = getBotResponse(text);
+        botMsg.setAttribute('aria-label', `Assistant replied: ${getBotResponse(text)}`);
+        messages.appendChild(botMsg);
+        messages.scrollTop = messages.scrollHeight;
+    }, 300);
+
+    messages.scrollTop = messages.scrollHeight;
 }
 
-/**
- * Get bot response based on user input
- * @param {string} message - User message
- * @returns {string} Bot response
- */
-function getBotResponse(message) {
-    const lower = message.toLowerCase();
-    for (const [key, response] of Object.entries(CHATBOT_RESPONSES)) {
-        if (lower.includes(key)) return response;
-    }
-    return CHATBOT_RESPONSES.default;
-}
+const debouncedSendChat = debounce(sendChatMessage, 200);
 
 // ============================================================
 // QUIZ
@@ -380,9 +376,6 @@ function getBotResponse(message) {
 let currentQuestion = 0;
 let score = 0;
 
-/**
- * Render the current quiz question
- */
 function renderQuiz() {
     const container = document.getElementById('quiz-container');
     if (!container) return;
@@ -401,16 +394,17 @@ function renderQuiz() {
         <p class="quiz-question" id="quiz-q-${currentQuestion}">${q.question}</p>
         <div class="quiz-options" role="radiogroup" aria-labelledby="quiz-q-${currentQuestion}">
             ${q.options.map((opt, i) => `
-                <button class="quiz-option" onclick="selectAnswer(${i})" role="radio" aria-checked="false" aria-label="${opt}">
+                <button class="quiz-option" data-index="${i}" role="radio" aria-checked="false" aria-label="${opt}">
                     ${String.fromCharCode(65 + i)}. ${opt}
                 </button>`).join('')}
         </div>`;
+
+    // Event delegation instead of onclick attributes
+    container.querySelectorAll('.quiz-option').forEach(btn => {
+        btn.addEventListener('click', () => selectAnswer(parseInt(btn.getAttribute('data-index'), 10)));
+    });
 }
 
-/**
- * Handle quiz answer selection
- * @param {number} selected - Selected answer index
- */
 function selectAnswer(selected) {
     const q = QUIZ_QUESTIONS[currentQuestion];
     const options = document.querySelectorAll('.quiz-option');
@@ -434,17 +428,13 @@ function selectAnswer(selected) {
     nextBtn.className = 'primary-btn mt-1';
     nextBtn.textContent = currentQuestion < QUIZ_QUESTIONS.length - 1 ? 'Next Question →' : 'See Results';
     nextBtn.setAttribute('aria-label', currentQuestion < QUIZ_QUESTIONS.length - 1 ? 'Go to next question' : 'See quiz results');
-    nextBtn.onclick = () => {
+    nextBtn.addEventListener('click', () => {
         currentQuestion++;
         renderQuiz();
-    };
+    });
     container.appendChild(nextBtn);
 }
 
-/**
- * Render quiz results
- * @param {HTMLElement} container - Container element
- */
 function renderQuizResults(container) {
     const percentage = Math.round((score / QUIZ_QUESTIONS.length) * 100);
     const grade = percentage >= 80 ? '🏆 Excellent!' : percentage >= 60 ? '👍 Good!' : '📚 Keep Learning!';
@@ -457,13 +447,12 @@ function renderQuizResults(container) {
                 <span class="score-percent">${percentage}%</span>
             </div>
             <p>You answered ${score} out of ${QUIZ_QUESTIONS.length} questions correctly!</p>
-            <button class="primary-btn" onclick="restartQuiz()" aria-label="Restart quiz">🔄 Try Again</button>
+            <button class="primary-btn" id="restart-quiz-btn" aria-label="Restart the election quiz">🔄 Try Again</button>
         </div>`;
+
+    document.getElementById('restart-quiz-btn').addEventListener('click', restartQuiz);
 }
 
-/**
- * Restart the quiz
- */
 function restartQuiz() {
     currentQuestion = 0;
     score = 0;
@@ -471,56 +460,84 @@ function restartQuiz() {
 }
 
 // ============================================================
-// DEMO VOTING
+// DEMO VOTING — FIREBASE REALTIME DATABASE
 // ============================================================
 
-const votes = { A: 0, B: 0, C: 0, NOTA: 0 };
 let hasVoted = false;
 
+const PARTIES = [
+    { key: 'A', label: 'Progressive Dawn 🌅', color: '#f59e0b' },
+    { key: 'B', label: 'Heritage Front 🌲', color: '#10b981' },
+    { key: 'C', label: 'Future Forward 🚀', color: '#6366f1' },
+    { key: 'NOTA', label: 'NOTA', color: '#6b7280' }
+];
+
 /**
- * Cast a demo vote
- * @param {string} party - Party to vote for
+ * Cast vote — saves to Firebase if available, else local fallback
  */
 function castVote(party) {
     if (hasVoted) {
         alert('You have already voted in this demo session!');
         return;
     }
-    votes[party]++;
-    hasVoted = true;
-    renderResults();
 
-    const voteBtns = document.querySelectorAll('.vote-btn');
-    voteBtns.forEach(btn => {
+    hasVoted = true;
+    document.querySelectorAll('.vote-btn').forEach(btn => {
         btn.disabled = true;
         btn.setAttribute('aria-disabled', 'true');
     });
+
+    if (db) {
+        // Firebase: increment vote count in Realtime Database
+        db.ref('votes/' + party).transaction(currentCount => (currentCount || 0) + 1)
+            .then(() => console.log('Vote saved to Firebase:', party))
+            .catch(err => console.warn('Firebase vote error:', err));
+    } else {
+        // Local fallback
+        localVotes[party] = (localVotes[party] || 0) + 1;
+        renderLocalResults();
+    }
+}
+
+// Local fallback votes object
+const localVotes = { A: 0, B: 0, C: 0, NOTA: 0 };
+
+function renderLocalResults() {
+    const container = document.getElementById('poll-results');
+    if (!container) return;
+    const total = Object.values(localVotes).reduce((a, b) => a + b, 0);
+    renderResultBars(container, localVotes, total);
+}
+
+function renderResultBars(container, votes, total) {
+    container.innerHTML = PARTIES.map(p => {
+        const count = votes[p.key] || 0;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        return `
+            <div class="result-bar" role="meter" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="${p.label}: ${pct}% (${count} votes)">
+                <div class="result-label">${p.label}</div>
+                <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${p.color}"></div></div>
+                <div class="result-pct">${pct}% (${count})</div>
+            </div>`;
+    }).join('');
 }
 
 /**
- * Render demo voting results
+ * Listen to Firebase for real-time vote updates
  */
-function renderResults() {
+function listenToVotes() {
     const container = document.getElementById('poll-results');
     if (!container) return;
 
-    const total = Object.values(votes).reduce((a, b) => a + b, 0);
-    const parties = [
-        { key: 'A', label: 'Progressive Dawn 🌅', color: '#f59e0b' },
-        { key: 'B', label: 'Heritage Front 🌲', color: '#10b981' },
-        { key: 'C', label: 'Future Forward 🚀', color: '#6366f1' },
-        { key: 'NOTA', label: 'NOTA', color: '#6b7280' }
-    ];
-
-    container.innerHTML = parties.map(p => {
-        const pct = total > 0 ? Math.round((votes[p.key] / total) * 100) : 0;
-        return `
-            <div class="result-bar" role="meter" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="${p.label}: ${pct}%">
-                <div class="result-label">${p.label}</div>
-                <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${p.color}"></div></div>
-                <div class="result-pct">${pct}%</div>
-            </div>`;
-    }).join('');
+    if (db) {
+        db.ref('votes').on('value', snapshot => {
+            const votes = snapshot.val() || { A: 0, B: 0, C: 0, NOTA: 0 };
+            const total = Object.values(votes).reduce((a, b) => a + b, 0);
+            renderResultBars(container, votes, total);
+        });
+    } else {
+        renderLocalResults();
+    }
 }
 
 // ============================================================
@@ -533,11 +550,14 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => navigateTo(btn.getAttribute('data-target')));
     });
 
-    // Card navigation
+    // Card navigation (keyboard + click)
     document.querySelectorAll('.nav-card').forEach(card => {
         card.addEventListener('click', () => navigateTo(card.getAttribute('data-target')));
         card.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') navigateTo(card.getAttribute('data-target'));
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigateTo(card.getAttribute('data-target'));
+            }
         });
     });
 
@@ -560,21 +580,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const boothBtn = document.getElementById('locate-booth-btn');
     if (boothBtn) boothBtn.addEventListener('click', locateBooth);
 
-    // Chatbot
+    // Chatbot with debounce
     const sendBtn = document.getElementById('send-chat-btn');
-    if (sendBtn) sendBtn.addEventListener('click', sendChatMessage);
+    if (sendBtn) sendBtn.addEventListener('click', debouncedSendChat);
 
     const chatInput = document.getElementById('chat-input');
-    if (chatInput) chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendChatMessage(); });
+    if (chatInput) chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') debouncedSendChat(); });
 
     // Demo voting
     document.querySelectorAll('.vote-btn').forEach(btn => {
         btn.addEventListener('click', () => castVote(btn.getAttribute('data-party')));
     });
 
-    // Initialize quiz and results
+    // Initialize quiz
     renderQuiz();
-    renderResults();
+
+    // Start Firebase real-time vote listener
+    listenToVotes();
 
     // Set initial aria-hidden for inactive sections
     document.querySelectorAll('.content-section:not(.active)').forEach(s => {
